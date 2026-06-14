@@ -21,7 +21,7 @@ function ProtectedRoute() {
 
 export function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/shikum-360-ui">
       <AuthProvider>
         <UIProvider>
           <NotificationsProvider>

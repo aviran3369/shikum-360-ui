@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from 'node:url';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/shikum-360-ui/',
   plugins: [react()],
   resolve: {
     alias: {
