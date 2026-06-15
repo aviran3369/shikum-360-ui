@@ -7,7 +7,14 @@ import { userRoleMeta } from '@/lib/statusMaps';
 import { useDisclosure } from '@/hooks';
 import { cn } from '@/lib/cn';
 
-export function ProfileMenu({ variant = 'avatar' }: { variant?: 'avatar' | 'card' }) {
+export function ProfileMenu({
+  variant = 'avatar',
+  showLabel = true,
+}: {
+  variant?: 'avatar' | 'card';
+  /** Avatar variant: when false, render an icon-only centered trigger (e.g. the collapsed dark rail). */
+  showLabel?: boolean;
+}) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const anchorRef = useRef<HTMLButtonElement>(null);
@@ -41,14 +48,21 @@ export function ProfileMenu({ variant = 'avatar' }: { variant?: 'avatar' | 'card
           type="button"
           onClick={toggle}
           aria-label="תפריט משתמש"
-          className="flex items-center gap-2 rounded-lg p-0.5 pe-2 transition-colors hover:bg-slate-100"
+          className={cn(
+            'flex items-center rounded-lg transition-colors',
+            showLabel ? 'gap-2 p-0.5 pe-2 hover:bg-slate-100' : 'justify-center p-1 hover:bg-white/10',
+          )}
         >
           <Avatar name={user.fullName} color={user.avatarColor} size="sm" />
-          <span className="hidden text-start sm:block">
-            <span className="block text-xs font-semibold leading-tight text-slate-700">{user.fullName}</span>
-            <span className="block text-2xs leading-tight text-slate-400">{role}</span>
-          </span>
-          <ChevronDown className="hidden h-4 w-4 text-slate-400 sm:block" />
+          {showLabel && (
+            <>
+              <span className="hidden text-start sm:block">
+                <span className="block text-xs font-semibold leading-tight text-slate-700">{user.fullName}</span>
+                <span className="block text-2xs leading-tight text-slate-400">{role}</span>
+              </span>
+              <ChevronDown className="hidden h-4 w-4 text-slate-400 sm:block" />
+            </>
+          )}
         </button>
       )}
 
@@ -56,8 +70,8 @@ export function ProfileMenu({ variant = 'avatar' }: { variant?: 'avatar' | 'card
         anchorRef={anchorRef}
         open={isOpen}
         onClose={close}
-        align={variant === 'card' ? 'center' : 'end'}
-        placement={variant === 'card' ? 'top' : 'bottom'}
+        align={variant === 'card' ? 'center' : showLabel ? 'end' : 'start'}
+        placement={variant === 'card' || !showLabel ? 'top' : 'bottom'}
         width={236}
       >
         <div className="flex items-center gap-3 border-b border-slate-100 px-3 py-3">

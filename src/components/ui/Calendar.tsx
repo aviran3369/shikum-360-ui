@@ -151,7 +151,10 @@ export interface DateRangePickerProps {
   className?: string;
 }
 
-/** Trigger input + popover dual-month range picker (used by the trip filters). */
+/**
+ * Range picker: a trigger + dual-month popover on desktop (`lg+`), and two separate
+ * native from/to date inputs on mobile (`< lg`) where the 2-month calendar won't fit.
+ */
 export function DateRangePicker({
   value,
   onChange,
@@ -170,39 +173,72 @@ export function DateRangePicker({
         ? `${formatDate(value.from)} - …`
         : placeholder;
 
-  return (
-    <>
-      <button
-        ref={anchorRef}
-        type="button"
-        onClick={toggle}
-        className={cn(
-          'flex w-full items-center justify-between gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm transition-colors hover:border-slate-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/25',
-          h,
-          className,
-        )}
-      >
-        <span className={cn('truncate', value.from ? 'text-slate-800' : 'text-slate-400')}>{label}</span>
-        <CalendarIcon className="h-4 w-4 shrink-0 text-slate-400" />
-      </button>
+  const inputClass = cn(
+    'w-full rounded-md border border-slate-300 bg-white px-2.5 text-sm text-slate-800 transition-colors hover:border-slate-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/25',
+    h,
+  );
 
-      <Popover anchorRef={anchorRef} open={isOpen} onClose={close} align="start" width={560}>
-        <div className="p-3">
-          <RangeCalendar value={value} onChange={onChange} months={2} />
-          <div className="mt-2 flex items-center justify-between border-t border-slate-100 pt-2">
-            <button
-              type="button"
-              onClick={() => onChange({ from: null, to: null })}
-              className="text-xs font-medium text-slate-500 transition-colors hover:text-slate-700"
-            >
-              ניקוי
-            </button>
-            <Button size="xs" onClick={close} disabled={!value.from || !value.to}>
-              אישור
-            </Button>
+  return (
+    <div className={className}>
+      {/* Mobile (< lg): separate from / to native date inputs. */}
+      <div className="grid grid-cols-2 gap-2 lg:hidden">
+        <label className="block">
+          <span className="mb-0.5 block text-2xs text-slate-400">מתאריך</span>
+          <input
+            type="date"
+            dir="ltr"
+            value={value.from ?? ''}
+            max={value.to ?? undefined}
+            onChange={(e) => onChange({ ...value, from: e.target.value || null })}
+            className={inputClass}
+          />
+        </label>
+        <label className="block">
+          <span className="mb-0.5 block text-2xs text-slate-400">עד תאריך</span>
+          <input
+            type="date"
+            dir="ltr"
+            value={value.to ?? ''}
+            min={value.from ?? undefined}
+            onChange={(e) => onChange({ ...value, to: e.target.value || null })}
+            className={inputClass}
+          />
+        </label>
+      </div>
+
+      {/* Desktop (lg+): trigger + dual-month popover. */}
+      <div className="hidden lg:block">
+        <button
+          ref={anchorRef}
+          type="button"
+          onClick={toggle}
+          className={cn(
+            'flex w-full items-center justify-between gap-2 rounded-md border border-slate-300 bg-white px-3 text-sm transition-colors hover:border-slate-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/25',
+            h,
+          )}
+        >
+          <span className={cn('truncate', value.from ? 'text-slate-800' : 'text-slate-400')}>{label}</span>
+          <CalendarIcon className="h-4 w-4 shrink-0 text-slate-400" />
+        </button>
+
+        <Popover anchorRef={anchorRef} open={isOpen} onClose={close} align="start" width={560}>
+          <div className="p-3">
+            <RangeCalendar value={value} onChange={onChange} months={2} />
+            <div className="mt-2 flex items-center justify-between border-t border-slate-100 pt-2">
+              <button
+                type="button"
+                onClick={() => onChange({ from: null, to: null })}
+                className="text-xs font-medium text-slate-500 transition-colors hover:text-slate-700"
+              >
+                ניקוי
+              </button>
+              <Button size="xs" onClick={close} disabled={!value.from || !value.to}>
+                אישור
+              </Button>
+            </div>
           </div>
-        </div>
-      </Popover>
-    </>
+        </Popover>
+      </div>
+    </div>
   );
 }

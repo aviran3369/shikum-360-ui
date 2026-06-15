@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { Bell, History, Search } from 'lucide-react';
+import { Bell, History, Menu, Search } from 'lucide-react';
 import { Breadcrumbs, CountBadge, IconButton } from '@/components/ui';
 import { metaForPath } from '@/constants/nav';
 import { useNotifications, useUI } from '@/store';
@@ -15,10 +15,13 @@ export function Topbar({ onOpenNotifications, onOpenActivity }: TopbarProps) {
   const { pathname } = useLocation();
   const meta = metaForPath(pathname);
   const { unreadCount } = useNotifications();
-  const { openPalette } = useUI();
+  const { openPalette, toggleMobileSidebar } = useUI();
 
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur">
+      <IconButton label="תפריט" variant="ghost" onClick={toggleMobileSidebar} className="-ms-1.5 lg:hidden">
+        <Menu className="h-5 w-5 text-slate-600" />
+      </IconButton>
       <Breadcrumbs items={meta.crumbs} />
 
       <div className="ms-auto flex items-center gap-0.5">

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Bus, PanelRightClose, PanelRightOpen, Search } from 'lucide-react';
+import { Bus, PanelRightClose, PanelRightOpen, Search, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useUI } from '@/store';
 import { navGroups } from '@/constants/nav';
@@ -7,17 +7,21 @@ import { Tooltip } from '@/components/ui';
 import { ProfileMenu } from './ProfileMenu';
 
 export function Sidebar() {
-  const { sidebarCollapsed, toggleSidebar, openPalette } = useUI();
+  const { sidebarCollapsed, toggleSidebar, openPalette, mobileSidebarOpen, closeMobileSidebar } = useUI();
 
   return (
     <aside
       className={cn(
-        'sidebar-chrome relative z-20 flex h-full shrink-0 flex-col text-white shadow-sidebar transition-[width] duration-200',
+        'sidebar-chrome z-20 flex h-full shrink-0 flex-col text-white shadow-sidebar transition-[transform,width] duration-300',
+        // Mobile (< lg): off-canvas drawer pinned to the inline-start edge (right in RTL).
+        // Scoped to max-lg so desktop has NO transform and stays a static in-flow column.
+        'max-lg:fixed max-lg:inset-y-0 max-lg:start-0 max-lg:z-50',
+        mobileSidebarOpen ? 'max-lg:translate-x-0' : 'max-lg:rtl:translate-x-full max-lg:ltr:-translate-x-full',
         sidebarCollapsed ? 'w-[4.25rem]' : 'w-sidebar',
       )}
     >
       {/* Brand */}
-      <div className="flex h-14 items-center gap-2.5 px-3">
+      <div className={cn('flex h-14 items-center gap-2.5 px-3', sidebarCollapsed && 'justify-center')}>
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-600 shadow-soft">
           <Bus className="h-5 w-5 text-white" />
         </span>
@@ -27,15 +31,41 @@ export function Sidebar() {
             <p className="truncate text-2xs text-brand-200">ניהול הסעות וסידור</p>
           </div>
         )}
+        {/* Desktop collapse toggle (only when expanded) */}
+        {!sidebarCollapsed && (
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-label="כיווץ תפריט"
+            className="hidden rounded-md p-1.5 text-brand-200 transition-colors hover:bg-white/10 hover:text-white lg:inline-flex"
+          >
+            <PanelRightClose className="h-4 w-4" />
+          </button>
+        )}
+        {/* Mobile close */}
         <button
           type="button"
-          onClick={toggleSidebar}
-          aria-label={sidebarCollapsed ? 'הרחבת תפריט' : 'כיווץ תפריט'}
-          className="rounded-md p-1.5 text-brand-200 transition-colors hover:bg-white/10 hover:text-white"
+          onClick={closeMobileSidebar}
+          aria-label="סגירת תפריט"
+          className="rounded-md p-1.5 text-brand-200 transition-colors hover:bg-white/10 hover:text-white lg:hidden"
         >
-          {sidebarCollapsed ? <PanelRightOpen className="h-4 w-4" /> : <PanelRightClose className="h-4 w-4" />}
+          <X className="h-4 w-4" />
         </button>
       </div>
+
+      {/* Collapsed: centered expand toggle (desktop only) */}
+      {sidebarCollapsed && (
+        <div className="hidden justify-center pb-1 lg:flex">
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-label="הרחבת תפריט"
+            className="rounded-md p-1.5 text-brand-200 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            <PanelRightOpen className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Quick search */}
       <div className="px-3 pb-2">
@@ -71,7 +101,7 @@ export function Sidebar() {
                     to={item.to}
                     className={({ isActive }) =>
                       cn(
-                        'glass-shine relative flex items-center gap-2.5 py-2 text-sm transition-colors',
+                        'glass-shine relative flex w-full items-center gap-2.5 py-2 text-sm transition-colors',
                         sidebarCollapsed ? 'justify-center px-3' : 'px-4',
                         isActive
                           ? 'bg-[#49377F] font-semibold text-white before:absolute before:inset-y-0 before:start-0 before:w-1 before:bg-primary-400'
@@ -85,7 +115,13 @@ export function Sidebar() {
                 );
                 return (
                   <li key={item.to}>
-                    {sidebarCollapsed ? <Tooltip label={item.label} side="bottom">{link}</Tooltip> : link}
+                    {sidebarCollapsed ? (
+                      <Tooltip label={item.label} side="bottom" className="w-full">
+                        {link}
+                      </Tooltip>
+                    ) : (
+                      link
+                    )}
                   </li>
                 );
               })}
@@ -98,7 +134,7 @@ export function Sidebar() {
       <div className="border-t border-white/10 p-2.5">
         {sidebarCollapsed ? (
           <div className="flex justify-center">
-            <ProfileMenu variant="avatar" />
+            <ProfileMenu variant="avatar" showLabel={false} />
           </div>
         ) : (
           <ProfileMenu variant="card" />
